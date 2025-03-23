@@ -12,10 +12,12 @@ struct ContentView: View {
 	@State private var usedWords = [String]()
 	@State private var newWord = ""
 	@State private var rootWord = ""
+	@State private var score = 0
 	
 	@State private var errorTitle = ""
 	@State private var  errorMessage = ""
 	@State private var showingError = false
+	
 		
     var body: some View {
         
@@ -26,7 +28,14 @@ struct ContentView: View {
 				Section {
 					TextField("Enter your word", text: $newWord)
 						.textInputAutocapitalization(.never)
+					
+					HStack {
+						Text("Score:")
+						Text("\(score)")
+					}
 				}
+				
+				
 				
 				Section {
 					ForEach (usedWords, id: \.self ) { word in
@@ -49,13 +58,19 @@ struct ContentView: View {
 				Text(errorMessage)
 			}
 			
+			.toolbar {
+				Button("Restart", action: startGame)
+			}
+			
 		}
-    }
+    } 
 	
 	func addNewWord() {
 		let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
 		
-		guard answer.count > 0 else { return }
+		guard answer.count >= 3 else {
+			wordError(title: "Too short!", message: "We want at least 3 letters!")
+			return }
 		
 		guard isOriginal(word: answer) else {
 			wordError(title: "Word used already!" , message: "Choose another")
@@ -71,10 +86,16 @@ struct ContentView: View {
 			return
 		}
 		
+		guard answer != rootWord else {
+			wordError(title: "Same word!", message: "You cant use the same word we give you!")
+			return
+		}
+		
 		
 		withAnimation {
 			usedWords.insert(answer, at: 0)
 		}
+		score = score + 1
 		newWord = ""
 	}
 	
